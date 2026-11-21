@@ -237,9 +237,22 @@ export default function App() {
     [clearDrawAnimationTimers]
   );
 
-  const refreshPlayerState = useCallback(async () => {
+  const roundEndTimeRef = useRef<number>(Date.now() + DEFAULT_SYSTEM_CONFIG.drawIntervalSeconds * 1000);
+  const roundDurationRef = useRef<number>(DEFAULT_SYSTEM_CONFIG.drawIntervalSeconds);
+  const isSystemOpenRef = useRef<boolean>(DEFAULT_SYSTEM_CONFIG.isSystemOpen);
+  const isDrawingRef = useRef<boolean>(false);
+  const lastRoundIdRef = useRef<string>('');
+
+  const mergeByKey = <T,>(incoming: T[], existing: T[], getKey: (item: T) => string): T[] => {
+    const map = new Map<string, T>();
+    for (const item of existing) map.set(getKey(item), item);
+    for (const item of incoming) map.set(getKey(item), item);
+    return Array.from(map.values());
+  };
+
+  const refreshPlayerState = useCallback(async (mode: 'full' | 'live' = 'full') => {
     if (!playerToken) return;
-    const res = await lotteryApi.getPlayerState(playerToken);
+    const res = await lotteryApi.getPlayerState(playerToken, mode);
     if (!res.ok) {
       if (res.status === 401 || res.status === 403) {
         await handlePlayerLogout(
@@ -251,23 +264,49 @@ export default function App() {
     const state = res.data;
     if (!state) return;
 
+    const prevRoundId = lastRoundIdRef.current;
+    const wasDrawing = isDrawingRef.current;
+    lastRoundIdRef.current = state.currentRoundId;
+    roundEndTimeRef.current = state.roundEndTime;
+    roundDurationRef.current = Math.max(
+      1,
+      state.roundDurationSeconds || state.systemConfig.drawIntervalSeconds || 300
+    );
+    isSystemOpenRef.current = state.systemConfig.isSystemOpen;
+    isDrawingRef.current = state.isDrawing;
+
     serverClockOffsetRef.current = Date.now() - state.serverTimestamp;
     setPlayerSession(state.account);
     setCurrentRoundId(state.currentRoundId);
     setSystemConfig(state.systemConfig);
-    setPastRounds(state.pastRounds);
-    setPlayerTickets(state.tickets);
-    setPlayerTransactions(state.transactions);
+    if (mode === 'full') {
+      setPastRounds(state.pastRounds);
+      setPlayerTickets(state.tickets);
+      setPlayerTransactions(state.transactions);
+    } else {
+      setPastRounds((prev) =>
+        mergeByKey(state.pastRounds, prev, (r) => r.roundId)
+          .sort((a, b) => b.timestamp - a.timestamp)
+          .slice(0, 50)
+      );
+      setPlayerTickets((prev) =>
+        mergeByKey(state.tickets, prev, (t) => t.ticketId).sort(
+          (a, b) => b.timestamp - a.timestamp
+        )
+      );
+      setPlayerTransactions((prev) =>
+        mergeByKey(state.transactions, prev, (tx) => tx.transactionId).sort(
+          (a, b) => b.timestamp - a.timestamp
+        )
+      );
+    }
 
     if (state.isDrawing && state.activeDraw) {
       setCountdownSeconds(0);
       setBettingClosed(true);
       startClientDrawAnimation(state.activeDraw.numbers, state.activeDraw.roundId);
     } else {
-      const maxDuration = Math.max(
-        1,
-        state.roundDurationSeconds || state.systemConfig.drawIntervalSeconds || 300
-      );
+      const maxDuration = roundDurationRef.current;
       const remaining = Math.min(
         maxDuration,
         Math.max(
@@ -282,6 +321,12 @@ export default function App() {
       if (!isDrawing && state.pastRounds.length > 0) {
         setRollingNumbers(state.pastRounds[0].numbers);
       }
+    }
+
+    // If a round just settled or changed during live polling, fetch full authoritative state once
+    if (mode === 'live' && ((prevRoundId && prevRoundId !== state.currentRoundId) || (wasDrawing && !state.isDrawing))) {
+      void refreshPlayerState('full');
+      return;
     }
 
     if (pendingWinCheckRoundRef.current && !state.isDrawing) {
@@ -303,16 +348,57 @@ export default function App() {
 
   useEffect(() => {
     if (!playerToken || !playerSession) return;
-    refreshPlayerState();
-    const interval = window.setInterval(refreshPlayerState, 1000);
-    const handleOnline = () => refreshPlayerState();
+    let cancelled = false;
+    let timerId: number | null = null;
+
+    // Initial full state on login / refresh
+    void refreshPlayerState('full');
+
+    // Local 1s countdown UI tick (0 D1 reads)
+    const uiTick = window.setInterval(() => {
+      if (isDrawingRef.current) {
+        setCountdownSeconds(0);
+        setBettingClosed(true);
+        return;
+      }
+      const maxDuration = roundDurationRef.current;
+      const remaining = Math.min(
+        maxDuration,
+        Math.max(
+          0,
+          Math.ceil((roundEndTimeRef.current - (Date.now() - serverClockOffsetRef.current)) / 1000)
+        )
+      );
+      setCountdownSeconds(remaining);
+      setBettingClosed(!isSystemOpenRef.current || remaining <= 0);
+    }, 1000);
+
+    // Adaptive server sync: 2s near/during draw, 10s otherwise
+    const scheduleNextSync = () => {
+      if (cancelled) return;
+      const remaining = Math.max(
+        0,
+        Math.ceil((roundEndTimeRef.current - (Date.now() - serverClockOffsetRef.current)) / 1000)
+      );
+      const delayMs = isDrawingRef.current || remaining <= 8 ? 2000 : 10000;
+      timerId = window.setTimeout(async () => {
+        if (cancelled) return;
+        await refreshPlayerState('live');
+        scheduleNextSync();
+      }, delayMs);
+    };
+    scheduleNextSync();
+
+    const handleOnline = () => void refreshPlayerState('live');
     const handleVisibility = () => {
-      if (document.visibilityState === 'visible') refreshPlayerState();
+      if (document.visibilityState === 'visible') void refreshPlayerState('live');
     };
     window.addEventListener('online', handleOnline);
     document.addEventListener('visibilitychange', handleVisibility);
     return () => {
-      window.clearInterval(interval);
+      cancelled = true;
+      window.clearInterval(uiTick);
+      if (timerId !== null) window.clearTimeout(timerId);
       window.removeEventListener('online', handleOnline);
       document.removeEventListener('visibilitychange', handleVisibility);
     };

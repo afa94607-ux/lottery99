@@ -102,8 +102,13 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 );
 
 CREATE INDEX IF NOT EXISTS idx_tickets_user_id ON bet_tickets(user_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_user_timestamp ON bet_tickets(user_id, timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_tickets_timestamp ON bet_tickets(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_tickets_round_status ON bet_tickets(round_id, status);
 CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
+CREATE INDEX IF NOT EXISTS idx_transactions_user_timestamp ON transactions(user_id, timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_transactions_timestamp ON transactions(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_sessions_account_id ON sessions(account_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_token_active ON sessions(token, revoked, expires_at);
 CREATE INDEX IF NOT EXISTS idx_rounds_timestamp ON rounds(timestamp DESC);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_timestamp ON audit_logs(timestamp DESC);

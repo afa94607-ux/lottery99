@@ -38,13 +38,14 @@ export interface PlayerStateResponse extends PublicLotteryState {
 }
 
 export interface AdminStateResponse extends PublicLotteryState {
+  mode?: 'full' | 'live';
   owner: AppUser;
   forcedNextNumbers: Record<ChannelLetter, string> | null;
   players: AppUser[];
   tickets: BetTicket[];
-  transactions: BalanceTransaction[];
-  reports: FinancialReportsSummary;
-  auditLogs: AuditLogEntry[];
+  transactions?: BalanceTransaction[];
+  reports?: FinancialReportsSummary;
+  auditLogs?: AuditLogEntry[];
 }
 
 export interface ApiResult<T> {
@@ -135,8 +136,9 @@ export const lotteryApi = {
   },
 
   // Player endpoints
-  getPlayerState(token: string) {
-    return requestJson<PlayerStateResponse>('/api/player/state', { token });
+  getPlayerState(token: string, mode: 'full' | 'live' = 'full') {
+    const qs = mode === 'live' ? '?mode=live' : '';
+    return requestJson<PlayerStateResponse>(`/api/player/state${qs}`, { token });
   },
 
   placePlayerBet(

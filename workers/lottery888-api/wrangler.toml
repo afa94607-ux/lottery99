@@ -19,7 +19,7 @@ name = "lottery888-api"
 
 [env.production.vars]
 LOTTERY_DRAW_DURATION_MS = "6800"
-ALLOWED_ORIGINS = "https://adminlottery99.afa94607.workers.dev,https://lottery888-game-page.afa94607.workers.dev,https://lottery888-admin.afa94607.workers.dev,http://127.0.0.1:3000,http://localhost:3000,http://127.0.0.1:5173,http://localhost:5173"
+ALLOWED_ORIGINS = "https://adminlottery99.win,https://www.adminlottery99.win,https://adminlottery99.afa94607.workers.dev,https://lottery99.win,https://www.lottery99.win,https://lottery888-game-page.afa94607.workers.dev,https://lottery888-admin.afa94607.workers.dev,http://127.0.0.1:3000,http://localhost:3000,http://127.0.0.1:5173,http://localhost:5173"
 
 [[env.production.d1_databases]]
 binding = "DB"

@@ -59,7 +59,22 @@ function getDrawDurationMs(env: Env): number {
   return Math.max(1000, Number.isFinite(parsed) ? parsed : 6800);
 }
 
-async function buildSharedRoundSnapshot(db: LotteryD1Database, meta: PersistedRoundMeta) {
+let publicCache: {
+  expiresAt: number;
+  roundEndTime: number;
+  isDrawing: boolean;
+  payload: Awaited<ReturnType<typeof buildSharedRoundSnapshot>>;
+} | null = null;
+
+function invalidatePublicCache() {
+  publicCache = null;
+}
+
+async function buildSharedRoundSnapshot(
+  db: LotteryD1Database,
+  meta: PersistedRoundMeta,
+  pastRoundsLimit = 50
+) {
   const now = Date.now();
   const currentRoundId = `26292#${meta.currentRoundNumber}`;
   const maxDuration = Math.max(1, meta.systemConfig.drawIntervalSeconds || 300);
@@ -81,7 +96,7 @@ async function buildSharedRoundSnapshot(db: LotteryD1Database, meta: PersistedRo
     bettingClosed,
     isDrawing: meta.isDrawing,
     activeDraw: meta.activeDraw,
-    pastRounds: await db.getPastRounds(50),
+    pastRounds: await db.getPastRounds(pastRoundsLimit),
     systemConfig: meta.systemConfig,
   };
 }
@@ -198,11 +213,37 @@ async function handleFetch(request: Request, env: Env): Promise<Response> {
       }
 
       // =====================================================================
-      // SHARED PUBLIC LOTTERY DATA
+      // SHARED PUBLIC LOTTERY DATA (2s in-isolate cache for unauth polling)
       // =====================================================================
       if (method === 'GET' && pathname === '/api/lottery/public') {
+        const now = Date.now();
+        if (
+          publicCache &&
+          now < publicCache.expiresAt &&
+          !publicCache.isDrawing &&
+          now < publicCache.roundEndTime
+        ) {
+          const maxDuration = Math.max(1, publicCache.payload.systemConfig.drawIntervalSeconds || 300);
+          const remaining = Math.min(
+            maxDuration,
+            Math.max(0, Math.ceil((publicCache.roundEndTime - now) / 1000))
+          );
+          return jsonResponse({
+            ...publicCache.payload,
+            serverTimestamp: now,
+            countdownSeconds: remaining,
+            bettingClosed: !publicCache.payload.systemConfig.isSystemOpen || remaining <= 0,
+          });
+        }
         const meta = await db.tickAuthoritativeRound(drawDurationMs);
-        return jsonResponse(await buildSharedRoundSnapshot(db, meta));
+        const payload = await buildSharedRoundSnapshot(db, meta, 50);
+        publicCache = {
+          expiresAt: Date.now() + 2000,
+          roundEndTime: meta.roundEndTime,
+          isDrawing: meta.isDrawing,
+          payload,
+        };
+        return jsonResponse(payload);
       }
 
       // =====================================================================
@@ -212,18 +253,21 @@ async function handleFetch(request: Request, env: Env): Promise<Response> {
         const auth = await requireRole(request, db, 'PLAYER');
         if (auth instanceof Response) return auth;
 
+        const isLive = url.searchParams.get('mode') === 'live';
         const meta = await db.tickAuthoritativeRound(drawDurationMs);
-        const player = await db.getAccountById(auth.account.id);
+        // Re-fetch account only if a draw could have just settled or full mode requested
+        const player = isLive ? auth.account : (await db.getAccountById(auth.account.id)) || auth.account;
         if (!player || player.status !== 'ACTIVE') {
           return jsonResponse({ error: 'Player account is disabled.' }, 403);
         }
         const [snapshot, tickets, transactions] = await Promise.all([
-          buildSharedRoundSnapshot(db, meta),
-          db.getPlayerTickets(player.id),
-          db.getPlayerTransactions(player.id),
+          buildSharedRoundSnapshot(db, meta, isLive ? 10 : 50),
+          isLive ? db.getPlayerTickets(player.id, 20) : db.getPlayerTickets(player.id),
+          isLive ? db.getPlayerTransactions(player.id, 10) : db.getPlayerTransactions(player.id),
         ]);
         return jsonResponse({
           ...snapshot,
+          mode: isLive ? 'live' : 'full',
           account: player,
           tickets,
           transactions,
@@ -262,9 +306,28 @@ async function handleFetch(request: Request, env: Env): Promise<Response> {
         const auth = await requireRole(request, db, 'OWNER');
         if (auth instanceof Response) return auth;
 
+        const isLive = url.searchParams.get('mode') === 'live';
         const meta = await db.tickAuthoritativeRound(drawDurationMs);
+        const currentRoundId = `26292#${meta.currentRoundNumber}`;
+
+        if (isLive) {
+          const [snapshot, players, tickets] = await Promise.all([
+            buildSharedRoundSnapshot(db, meta, 10),
+            db.listPlayers(),
+            db.getRoundTickets(currentRoundId, 100),
+          ]);
+          return jsonResponse({
+            ...snapshot,
+            mode: 'live',
+            owner: auth.account,
+            forcedNextNumbers: meta.forcedNextNumbers,
+            players,
+            tickets,
+          });
+        }
+
         const [snapshot, players, tickets, transactions, reports, auditLogs] = await Promise.all([
-          buildSharedRoundSnapshot(db, meta),
+          buildSharedRoundSnapshot(db, meta, 50),
           db.listPlayers(),
           db.getAllTickets(),
           db.getAllTransactions(),
@@ -273,6 +336,7 @@ async function handleFetch(request: Request, env: Env): Promise<Response> {
         ]);
         return jsonResponse({
           ...snapshot,
+          mode: 'full',
           owner: auth.account,
           forcedNextNumbers: meta.forcedNextNumbers,
           players,
@@ -398,6 +462,7 @@ async function handleFetch(request: Request, env: Env): Promise<Response> {
         const auth = await requireRole(request, db, 'OWNER');
         if (auth instanceof Response) return auth;
         const draw = await db.startServerDraw(auth.account);
+        invalidatePublicCache();
         return jsonResponse({
           success: true,
           isDrawing: draw !== null,
@@ -414,6 +479,7 @@ async function handleFetch(request: Request, env: Env): Promise<Response> {
             auth.account,
             (body.config as Record<string, unknown>) || {}
           );
+          invalidatePublicCache();
           return jsonResponse({ success: true, systemConfig: updated.systemConfig });
         } catch (err) {
           return jsonResponse({ error: err instanceof Error ? err.message : 'Failed to update system configuration.' }, 400);

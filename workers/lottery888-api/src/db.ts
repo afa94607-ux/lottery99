@@ -983,7 +983,7 @@ export class LotteryD1Database {
     return { ticket: this.mapTicketRow(updated), refundedAmount: refund };
   }
 
-  async getPlayerTickets(userId: string): Promise<BetTicket[]> {
+  async getPlayerTickets(userId: string, limit = 10000): Promise<BetTicket[]> {
     const res = await this.db
       .prepare(
         `SELECT t.*, a.username
@@ -991,9 +991,24 @@ export class LotteryD1Database {
          LEFT JOIN accounts a ON a.id = t.user_id
          WHERE t.user_id = ?
          ORDER BY t.timestamp DESC
-         LIMIT 10000`
+         LIMIT ?`
       )
-      .bind(userId)
+      .bind(userId, limit)
+      .all<DbRow>();
+    return (res.results || []).map((r) => this.mapTicketRow(r));
+  }
+
+  async getRoundTickets(roundId: string, limit = 100): Promise<BetTicket[]> {
+    const res = await this.db
+      .prepare(
+        `SELECT t.*, a.username
+         FROM bet_tickets t
+         LEFT JOIN accounts a ON a.id = t.user_id
+         WHERE t.round_id = ?
+         ORDER BY t.timestamp DESC
+         LIMIT ?`
+      )
+      .bind(roundId, limit)
       .all<DbRow>();
     return (res.results || []).map((r) => this.mapTicketRow(r));
   }
@@ -1011,10 +1026,10 @@ export class LotteryD1Database {
     return (res.results || []).map((r) => this.mapTicketRow(r));
   }
 
-  async getPlayerTransactions(userId: string): Promise<BalanceTransaction[]> {
+  async getPlayerTransactions(userId: string, limit = 200): Promise<BalanceTransaction[]> {
     const res = await this.db
-      .prepare(`SELECT * FROM transactions WHERE user_id = ? ORDER BY timestamp DESC LIMIT 200`)
-      .bind(userId)
+      .prepare(`SELECT * FROM transactions WHERE user_id = ? ORDER BY timestamp DESC LIMIT ?`)
+      .bind(userId, limit)
       .all<DbRow>();
     return (res.results || []).map((r) => this.mapTransactionRow(r));
   }
@@ -1031,10 +1046,15 @@ export class LotteryD1Database {
   // =========================================================================
 
   async getPersistedMeta(): Promise<PersistedRoundMeta> {
-    await this.ensureSystemConfigRow();
-    const row = (await this.db
+    let row = await this.db
       .prepare(`SELECT * FROM system_config WHERE id = 1`)
-      .first<DbRow>())!;
+      .first<DbRow>();
+    if (!row) {
+      await this.ensureSystemConfigRow();
+      row = (await this.db
+        .prepare(`SELECT * FROM system_config WHERE id = 1`)
+        .first<DbRow>())!;
+    }
 
     let activeDraw: ActiveDrawState | null = null;
     if (row.active_draw_json) {
