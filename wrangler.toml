@@ -1,0 +1,12 @@
+name = "lottery888-game-page"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+[vars]
+VITE_API_URL = "https://lottery888-api.afa94607.workers.dev"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+html_handling = "auto-trailing-slash"
+not_found_handling = "single-page-application"

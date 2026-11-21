@@ -1,0 +1,27 @@
+name = "lottery888-api-staging"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+LOTTERY_DRAW_DURATION_MS = "6800"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "lottery888-db-staging"
+database_id = "1589689d-c6f8-4b7e-b84f-7768885f32b0"
+
+[triggers]
+crons = ["* * * * *"]
+
+[env.production]
+name = "lottery888-api"
+
+[env.production.vars]
+LOTTERY_DRAW_DURATION_MS = "6800"
+ALLOWED_ORIGINS = "https://adminlottery99.afa94607.workers.dev,https://lottery888-game-page.afa94607.workers.dev,https://lottery888-admin.afa94607.workers.dev,http://127.0.0.1:3000,http://localhost:3000,http://127.0.0.1:5173,http://localhost:5173"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "lottery888-db"
+database_id = "df9299cf-58b2-45ba-ad70-cc7480f6d572"
