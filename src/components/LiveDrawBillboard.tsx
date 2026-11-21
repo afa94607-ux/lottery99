@@ -45,7 +45,7 @@ export const LiveDrawBillboard: React.FC<LiveDrawBillboardProps> = ({
   return (
     <div
       ref={containerRef}
-      className="relative w-full rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-r from-[#2a0845] via-[#642b73] to-[#2a0845] text-white border-2 border-amber-400/40"
+      className="relative w-full shrink-0 rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-r from-[#2a0845] via-[#642b73] to-[#2a0845] text-white border-2 border-amber-400/40"
     >
       {/* Background Stage Image with overlay */}
       <div className="absolute inset-0 opacity-40 mix-blend-screen pointer-events-none overflow-hidden">
@@ -61,10 +61,10 @@ export const LiveDrawBillboard: React.FC<LiveDrawBillboardProps> = ({
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-400/20 via-purple-900/40 to-transparent pointer-events-none" />
 
       {/* Top Bar of the Billboard */}
-      <div className="relative z-10 px-4 sm:px-6 pt-3 sm:pt-4 flex items-center justify-between">
+      <div className="relative z-10 px-3 sm:px-5 pt-2.5 sm:pt-3 flex items-center justify-between gap-2">
         {/* Left: Golden Ingot Bowl + Brand & Previous Round */}
-        <div className="flex items-center gap-3">
-          <div className="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.8)] bg-gradient-to-b from-amber-300 to-amber-600 p-0.5 shrink-0">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="relative w-10 h-10 sm:w-12 sm:h-12 xl:w-14 xl:h-14 rounded-full overflow-hidden border-2 border-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.8)] bg-gradient-to-b from-amber-300 to-amber-600 p-0.5 shrink-0">
             <img
               src="/src/assets/images/lottery_gold_ingot_pot_1792387005191.jpg"
               alt="Golden Pot"
@@ -73,12 +73,12 @@ export const LiveDrawBillboard: React.FC<LiveDrawBillboardProps> = ({
             />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+            <h1 className="text-lg sm:text-xl xl:text-2xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-300 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
               ឆ្នោតសំណាង 1/99
             </h1>
             <div className="text-xs sm:text-sm font-mono text-purple-200/90 tracking-wide mt-0.5 flex items-center">
               <span>{isDrawing ? 'វេនបច្ចុប្បន្ន' : previousRound.date}</span>
-              <span className="mx-2 text-amber-300 font-bold">
+              <span className="mx-1.5 text-amber-300 font-bold">
                 {isDrawing ? currentRoundId : previousRound.roundId}
               </span>
               {isDrawing && (
@@ -94,14 +94,14 @@ export const LiveDrawBillboard: React.FC<LiveDrawBillboardProps> = ({
         <div className="flex items-center gap-2">
           {/* Countdown Clock Box */}
           <div
-            className={`bg-white/95 rounded-xl px-3 sm:px-5 py-1.5 sm:py-2 text-slate-900 shadow-xl border-2 text-center transition-colors ${
+            className={`bg-white/95 rounded-xl px-3 sm:px-4 py-1 sm:py-1.5 text-slate-900 shadow-xl border-2 text-center transition-colors ${
               bettingClosed || isDrawing || countdownSeconds === 0
                 ? 'border-rose-500 ring-2 ring-rose-400/50'
                 : 'border-amber-400/60'
             }`}
           >
             <div
-              className={`font-mono text-xl sm:text-3xl font-black tracking-tight ${
+              className={`font-mono text-xl sm:text-2xl xl:text-3xl font-black tracking-tight ${
                 bettingClosed || isDrawing || countdownSeconds === 0 ? 'text-rose-600' : 'text-slate-900'
               }`}
             >
@@ -131,11 +131,11 @@ export const LiveDrawBillboard: React.FC<LiveDrawBillboardProps> = ({
       </div>
 
       {/* Main Golden Slot Billboard Frame */}
-      <div className="relative z-10 p-3 sm:p-6 flex flex-col items-center">
+      <div className="relative z-10 px-3 sm:px-5 pb-2.5 sm:pb-3.5 pt-2 flex flex-col items-center">
         {/* Golden Machine Border Box */}
-        <div className="w-full max-w-4xl p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl bg-gradient-to-b from-[#f9d423] via-[#e65c00] to-[#f9d423] shadow-[0_10px_30px_rgba(0,0,0,0.6),inset_0_2px_4px_rgba(255,255,255,0.8)] border-2 border-yellow-200">
-          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#240b36] to-[#000000] border border-amber-500/40 shadow-inner">
-            <div className="grid grid-cols-5 gap-1.5 sm:gap-3">
+        <div className="w-full max-w-4xl p-2 sm:p-2.5 rounded-2xl bg-gradient-to-b from-[#f9d423] via-[#e65c00] to-[#f9d423] shadow-[0_10px_30px_rgba(0,0,0,0.6),inset_0_2px_4px_rgba(255,255,255,0.8)] border-2 border-yellow-200">
+          <div className="p-1.5 sm:p-2 rounded-xl bg-gradient-to-b from-[#240b36] to-[#000000] border border-amber-500/40 shadow-inner">
+            <div className="grid grid-cols-5 gap-1.5 sm:gap-2.5">
               {channels.map((ch) => {
                 const isRev = revealedChannels[ch];
                 const displayNum = isDrawing
@@ -153,7 +153,7 @@ export const LiveDrawBillboard: React.FC<LiveDrawBillboardProps> = ({
                     }`}
                   >
                     {/* Arched Red Post Header */}
-                    <div className="bg-gradient-to-b from-[#e52d27] via-[#d31027] to-[#b31217] py-1 sm:py-2 text-center text-white font-black text-base sm:text-2xl tracking-wider shadow-md border-b-2 border-amber-400 flex items-center justify-center gap-1">
+                    <div className="bg-gradient-to-b from-[#e52d27] via-[#d31027] to-[#b31217] py-0.5 sm:py-1 text-center text-white font-black text-sm sm:text-lg xl:text-xl tracking-wider shadow-md border-b-2 border-amber-400 flex items-center justify-center gap-1">
                       <span>{ch}</span>
                       {isDrawing && isRev && (
                         <span className="text-[9px] bg-amber-300 text-slate-900 px-1 py-0.2 rounded font-sans font-black shadow-xs">
@@ -163,13 +163,13 @@ export const LiveDrawBillboard: React.FC<LiveDrawBillboardProps> = ({
                     </div>
 
                     {/* Slot Digit Container */}
-                    <div className="bg-gradient-to-b from-white via-slate-50 to-slate-200 h-16 sm:h-28 md:h-32 flex items-center justify-center relative overflow-hidden">
+                    <div className="bg-gradient-to-b from-white via-slate-50 to-slate-200 h-14 sm:h-20 xl:h-24 flex items-center justify-center relative overflow-hidden">
                       {/* Subtle horizontal glass line reflection */}
                       <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/70 to-transparent pointer-events-none" />
 
                       {/* Number Text with authentic colors from screenshot */}
                       <span
-                        className={`font-mono font-black text-3xl sm:text-5xl md:text-6xl tracking-tight transition-transform duration-200 ${colStyle.text} ${
+                        className={`font-mono font-black text-3xl sm:text-4xl xl:text-5xl tracking-tight transition-transform duration-200 ${colStyle.text} ${
                           isDrawing && !isRev
                             ? 'animate-slot-shake blur-[0.4px]'
                             : isDrawing && isRev
@@ -205,7 +205,7 @@ export const LiveDrawBillboard: React.FC<LiveDrawBillboardProps> = ({
           ) : bettingClosed || countdownSeconds === 0 ? (
             <div className="flex items-center gap-2 bg-rose-600/90 text-white border border-rose-300/60 px-3.5 py-1 rounded-full text-xs sm:text-sm font-bold shadow-md">
               <span className="w-2 h-2 rounded-full bg-white" />
-              <span>បិទការភ្នាល់ (Betting Closed) — ជុំ {currentRoundId}</span>
+              <span>Betting Closed — Wait for Next Round ({currentRoundId})</span>
             </div>
           ) : onTriggerDraw ? (
             <button

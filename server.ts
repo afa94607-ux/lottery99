@@ -57,6 +57,8 @@ function requireRole(role: 'OWNER' | 'PLAYER') {
   };
 }
 
+const BETTING_LOCK_SECONDS = 10;
+
 function getSharedRoundSnapshot() {
   const meta = db.getPersistedMeta();
   const now = Date.now();
@@ -66,7 +68,10 @@ function getSharedRoundSnapshot() {
     ? 0
     : Math.min(maxDuration, Math.max(0, Math.ceil((meta.roundEndTime - now) / 1000)));
   const bettingClosed =
-    isDrawing || !meta.systemConfig.isSystemOpen || now >= meta.roundEndTime || remaining <= 0;
+    isDrawing ||
+    !meta.systemConfig.isSystemOpen ||
+    now >= meta.roundEndTime ||
+    remaining <= BETTING_LOCK_SECONDS;
 
   return {
     serverTimestamp: now,
@@ -285,6 +290,10 @@ async function startServer() {
       });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Bet rejected.';
+      if (msg.startsWith('BETTING_CLOSED')) {
+        res.status(400).json({ error: 'Betting Closed — Wait for Next Round.', code: 'BETTING_CLOSED' });
+        return;
+      }
       res.status(400).json({ error: msg });
     }
   });

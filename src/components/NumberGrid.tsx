@@ -69,12 +69,12 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 sm:p-5 flex flex-col gap-4">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-3.5 sm:p-4 flex flex-col gap-3 lg:flex-1 lg:min-h-0">
       {/* Selection Mode Radios & Channels Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-3 border-b border-slate-100">
-        {/* Mode Selector matching screenshot: (o) លេខ  ( ) ចន្លោះ */}
-        <div className="flex items-center gap-6">
-          <label className={`flex items-center gap-2 font-medium text-slate-800 text-sm sm:text-base ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2.5 border-b border-slate-100 shrink-0">
+        {/* Mode Selector: (o) លេខ  ( ) ចន្លោះ */}
+        <div className="flex items-center gap-4 sm:gap-5">
+          <label className={`flex items-center gap-2 font-semibold text-slate-800 text-sm sm:text-base ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
             <input
               type="radio"
               name="selectionMode"
@@ -84,12 +84,12 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
                 sound.playClick();
                 setSelectionMode('NUMBER');
               }}
-              className="w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed"
+              className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed"
             />
             <span className={selectionMode === 'NUMBER' ? 'font-bold text-blue-700' : ''}>លេខ (Number)</span>
           </label>
 
-          <label className={`flex items-center gap-2 font-medium text-slate-800 text-sm sm:text-base ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
+          <label className={`flex items-center gap-2 font-semibold text-slate-800 text-sm sm:text-base ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
             <input
               type="radio"
               name="selectionMode"
@@ -99,15 +99,15 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
                 sound.playClick();
                 setSelectionMode('RANGE');
               }}
-              className="w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed"
+              className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed"
             />
             <span className={selectionMode === 'RANGE' ? 'font-bold text-blue-700' : ''}>ចន្លោះ (Range)</span>
           </label>
         </div>
 
         {/* Channel Pills: A, B, C, D, E */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <span className="text-xs sm:text-sm font-semibold text-slate-500 mr-1">ប៉ុស្តិ៍:</span>
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <span className="text-xs sm:text-sm font-bold text-slate-600 mr-0.5">ប៉ុស្តិ៍:</span>
           {channels.map((ch) => {
             const isSelected = selectedChannels.includes(ch);
             return (
@@ -118,7 +118,7 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
                   sound.playClick();
                   toggleChannel(ch);
                 }}
-                className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full font-black text-sm sm:text-base transition-all flex items-center justify-center border-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full font-black text-sm sm:text-base transition-all flex items-center justify-center border-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                   isSelected
                     ? 'bg-blue-600 border-blue-600 text-white shadow-md scale-105'
                     : 'bg-slate-50 border-blue-300 text-blue-600 hover:bg-blue-50'
@@ -134,7 +134,7 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
               sound.playClick();
               selectAllChannels();
             }}
-            className="text-xs px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-medium ml-1 transition-colors"
+            className="text-xs sm:text-sm px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-semibold ml-1 transition-colors"
           >
             {selectedChannels.length === 5 ? 'ដោះទាំងអស់' : 'គ្រប់ប៉ុស្តិ៍'}
           </button>
@@ -142,49 +142,49 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
       </div>
 
       {/* Quick Pick Toolbar for Range / Groups */}
-      <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-slate-500 font-medium mr-1">ជ្រើសរើសរហ័ស:</span>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm shrink-0">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <span className="text-slate-600 font-semibold mr-0.5">ជ្រើសរើសរហ័ស:</span>
           <button
             disabled={disabled}
             onClick={handleSelectSmall}
-            className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-50 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-medium transition-colors"
+            className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-semibold transition-colors"
           >
             តូច (01-49)
           </button>
           <button
             disabled={disabled}
             onClick={handleSelectBig}
-            className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-50 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-medium transition-colors"
+            className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-semibold transition-colors"
           >
             ធំ (50-99)
           </button>
           <button
             disabled={disabled}
             onClick={handleSelectOdd}
-            className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-50 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-medium transition-colors"
+            className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-semibold transition-colors"
           >
             សេស (Odd)
           </button>
           <button
             disabled={disabled}
             onClick={handleSelectEven}
-            className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-50 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-medium transition-colors"
+            className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-semibold transition-colors"
           >
             គូ (Even)
           </button>
           <button
             disabled={disabled}
             onClick={handleSelectTwins}
-            className="px-2.5 py-1 rounded-md bg-slate-100 hover:bg-blue-50 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-medium transition-colors"
+            className="px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 font-semibold transition-colors"
           >
             ភ្លោះ (11-99)
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-slate-600 font-medium">
-            ជ្រើសរើស: <strong className="text-blue-600 font-mono text-sm">{selectedNumbers.length}</strong> លេខ
+        <div className="flex items-center gap-2.5">
+          <span className="text-slate-700 font-semibold">
+            ជ្រើសរើស: <strong className="text-blue-600 font-mono text-sm sm:text-base">{selectedNumbers.length}</strong> លេខ
           </span>
           {selectedNumbers.length > 0 && (
             <button
@@ -193,7 +193,7 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
                 sound.playClick();
                 clearNumbers();
               }}
-              className="text-xs text-rose-600 hover:text-rose-700 disabled:opacity-50 disabled:cursor-not-allowed underline font-medium"
+              className="text-xs sm:text-sm text-rose-600 hover:text-rose-700 disabled:opacity-50 disabled:cursor-not-allowed underline font-semibold"
             >
               សម្អាត
             </button>
@@ -203,8 +203,8 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
 
       {/* Range Quick Decade Buttons (if Range mode is active) */}
       {selectionMode === 'RANGE' && (
-        <div className="p-3 bg-blue-50/60 rounded-xl border border-blue-200/60 flex flex-wrap gap-1.5 items-center">
-          <span className="text-xs font-semibold text-blue-900 mr-1">ចន្លោះលេខទូទៅ:</span>
+        <div className="p-2.5 bg-blue-50/60 rounded-xl border border-blue-200/60 flex flex-wrap gap-1.5 items-center shrink-0">
+          <span className="text-xs sm:text-sm font-semibold text-blue-900 mr-1">ចន្លោះលេខទូទៅ:</span>
           {[
             { label: '01-10', s: 1, e: 10 },
             { label: '11-20', s: 11, e: 20 },
@@ -221,7 +221,7 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
               key={r.label}
               disabled={disabled}
               onClick={() => handleSelectDecade(r.s, r.e)}
-              className="px-2.5 py-1 bg-white hover:bg-blue-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 rounded-md font-mono text-xs font-medium border border-blue-200 shadow-2xs transition-colors"
+              className="px-2.5 py-1 bg-white hover:bg-blue-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed text-slate-700 rounded-md font-mono text-xs sm:text-sm font-semibold border border-blue-200 shadow-2xs transition-colors"
             >
               {r.label}
             </button>
@@ -229,9 +229,9 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
         </div>
       )}
 
-      {/* 01 to 99 Interactive Grid (Rows of 20 exactly matching the screenshot) */}
-      <div className="w-full overflow-x-auto pb-1">
-        <div className="min-w-[640px] grid grid-cols-20 gap-1 sm:gap-1.5">
+      {/* 01 to 99 Interactive Grid (Circular, evenly spaced, centered) */}
+      <div className="w-full lg:flex-1 lg:min-h-0 overflow-y-auto flex items-start justify-center">
+        <div className="grid grid-cols-10 md:grid-cols-15 gap-2 justify-items-center mx-auto">
           {allNumbers.map((num) => {
             const isSelected = selectedNumbers.includes(num);
             return (
@@ -242,7 +242,7 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
                   sound.playSelect();
                   toggleNumber(num);
                 }}
-                className={`h-7 sm:h-9 rounded-full font-mono font-medium text-xs sm:text-sm transition-all flex items-center justify-center border disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`w-8 h-8 sm:w-9 sm:h-9 xl:w-10 xl:h-10 rounded-full font-mono font-semibold text-sm sm:text-base transition-all flex items-center justify-center border disabled:opacity-50 disabled:cursor-not-allowed ${
                   isSelected
                     ? 'bg-blue-600 border-blue-700 text-white font-bold shadow-md scale-105 z-10 ring-2 ring-blue-300'
                     : 'bg-white border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-blue-50/50'

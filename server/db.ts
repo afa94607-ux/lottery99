@@ -1122,8 +1122,10 @@ export class LotteryDatabase {
     if (isDrawing) {
       throw new Error('Draw is currently in progress. Please wait for the next round.');
     }
-    if (Date.now() >= meta.roundEndTime) {
-      throw new Error('Betting is closed for this round. Please wait for the next round.');
+    const nowCheck = Date.now();
+    const remainingSeconds = Math.ceil((meta.roundEndTime - nowCheck) / 1000);
+    if (nowCheck >= meta.roundEndTime || remainingSeconds <= 10) {
+      throw new Error('BETTING_CLOSED: Betting Closed — Wait for Next Round.');
     }
 
     const validChannels: ChannelLetter[] = ['A', 'B', 'C', 'D', 'E'];

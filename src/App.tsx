@@ -102,11 +102,57 @@ export default function App() {
   const activeRollIntervalRef = useRef<number | null>(null);
   const isMutedRef = useRef<boolean>(false);
   const pendingWinCheckRoundRef = useRef<string | null>(null);
-  const serverClockOffsetRef = useRef<number>(0);
+  const serverTimeAnchorRef = useRef<{ serverMs: number; perfMs: number }>({
+    serverMs: Date.now(),
+    perfMs: typeof performance !== 'undefined' ? performance.now() : 0,
+  });
+  const alertPlayedRoundRef = useRef<string | null>(null);
+  const prevCountdownRef = useRef<{ roundId: string; seconds: number } | null>(null);
+
+  const getAuthoritativeServerNowMs = useCallback(() => {
+    const perfNow = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    return serverTimeAnchorRef.current.serverMs + (perfNow - serverTimeAnchorRef.current.perfMs);
+  }, []);
 
   useEffect(() => {
     isMutedRef.current = isMuted;
   }, [isMuted]);
+
+  useEffect(() => {
+    sound.stopCountdownAudio();
+    return () => {
+      sound.stopCountdownAudio();
+    };
+  }, [currentRoundId]);
+
+  useEffect(() => {
+    if (!currentRoundId || !systemConfig.isSystemOpen) {
+      prevCountdownRef.current = null;
+      sound.stopCountdownAudio();
+      return;
+    }
+    if (isDrawing) {
+      prevCountdownRef.current = null;
+      return;
+    }
+    if (countdownSeconds <= 20 && countdownSeconds > 10) {
+      void sound.preloadCountdownAudio();
+    }
+    const prev = prevCountdownRef.current;
+    if (
+      prev &&
+      prev.roundId === currentRoundId &&
+      prev.seconds > 10 &&
+      countdownSeconds <= 10 &&
+      countdownSeconds > 0 &&
+      alertPlayedRoundRef.current !== currentRoundId
+    ) {
+      alertPlayedRoundRef.current = currentRoundId;
+      const remMs = Math.max(0, roundEndTimeRef.current - getAuthoritativeServerNowMs());
+      void sound.scheduleCountdownCues(remMs);
+    }
+    prevCountdownRef.current = { roundId: currentRoundId, seconds: countdownSeconds };
+  }, [countdownSeconds, currentRoundId, isDrawing, systemConfig.isSystemOpen, getAuthoritativeServerNowMs]);
 
   const clearDrawAnimationTimers = useCallback(() => {
     if (activeRollIntervalRef.current !== null) {
@@ -167,6 +213,8 @@ export default function App() {
     },
     [playerToken, clearDrawAnimationTimers]
   );
+
+  const RESULT_REVEAL_INTERVAL_MS = 1800;
 
   const startClientDrawAnimation = useCallback(
     (targetNumbers: Record<ChannelLetter, string>, roundIdToDraw: string) => {
@@ -229,7 +277,7 @@ export default function App() {
             }, 1300);
             activeDrawTimeoutsRef.current.push(finishId);
           }
-        }, 950 + idx * 1050);
+        }, 950 + idx * RESULT_REVEAL_INTERVAL_MS);
 
         activeDrawTimeoutsRef.current.push(timeoutId);
       });
@@ -252,7 +300,9 @@ export default function App() {
 
   const refreshPlayerState = useCallback(async (mode: 'full' | 'live' = 'full') => {
     if (!playerToken) return;
+    const reqStartPerf = typeof performance !== 'undefined' ? performance.now() : Date.now();
     const res = await lotteryApi.getPlayerState(playerToken, mode);
+    const reqEndPerf = typeof performance !== 'undefined' ? performance.now() : Date.now();
     if (!res.ok) {
       if (res.status === 401 || res.status === 403) {
         await handlePlayerLogout(
@@ -263,6 +313,12 @@ export default function App() {
     }
     const state = res.data;
     if (!state) return;
+
+    const halfRttMs = Math.min(500, Math.max(0, (reqEndPerf - reqStartPerf) / 2));
+    serverTimeAnchorRef.current = {
+      serverMs: state.serverTimestamp + halfRttMs,
+      perfMs: reqEndPerf,
+    };
 
     const prevRoundId = lastRoundIdRef.current;
     const wasDrawing = isDrawingRef.current;
@@ -275,7 +331,6 @@ export default function App() {
     isSystemOpenRef.current = state.systemConfig.isSystemOpen;
     isDrawingRef.current = state.isDrawing;
 
-    serverClockOffsetRef.current = Date.now() - state.serverTimestamp;
     setPlayerSession(state.account);
     setCurrentRoundId(state.currentRoundId);
     setSystemConfig(state.systemConfig);
@@ -311,12 +366,12 @@ export default function App() {
         maxDuration,
         Math.max(
           0,
-          Math.ceil((state.roundEndTime - (Date.now() - serverClockOffsetRef.current)) / 1000)
+          Math.ceil((state.roundEndTime - getAuthoritativeServerNowMs()) / 1000)
         )
       );
       setCountdownSeconds(remaining);
       setBettingClosed(
-        Boolean(state.bettingClosed) || !state.systemConfig.isSystemOpen || remaining <= 0
+        Boolean(state.bettingClosed) || !state.systemConfig.isSystemOpen || remaining <= 10
       );
       if (!isDrawing && state.pastRounds.length > 0) {
         setRollingNumbers(state.pastRounds[0].numbers);
@@ -344,7 +399,7 @@ export default function App() {
         }
       }
     }
-  }, [playerToken, isDrawing, startClientDrawAnimation, handlePlayerLogout]);
+  }, [playerToken, isDrawing, startClientDrawAnimation, handlePlayerLogout, getAuthoritativeServerNowMs]);
 
   useEffect(() => {
     if (!playerToken || !playerSession) return;
@@ -354,7 +409,7 @@ export default function App() {
     // Initial full state on login / refresh
     void refreshPlayerState('full');
 
-    // Local 1s countdown UI tick (0 D1 reads)
+    // Local 100ms monotonic UI tick aligned to authoritative server roundEndTime (0 D1 reads)
     const uiTick = window.setInterval(() => {
       if (isDrawingRef.current) {
         setCountdownSeconds(0);
@@ -366,21 +421,21 @@ export default function App() {
         maxDuration,
         Math.max(
           0,
-          Math.ceil((roundEndTimeRef.current - (Date.now() - serverClockOffsetRef.current)) / 1000)
+          Math.ceil((roundEndTimeRef.current - getAuthoritativeServerNowMs()) / 1000)
         )
       );
       setCountdownSeconds(remaining);
-      setBettingClosed(!isSystemOpenRef.current || remaining <= 0);
-    }, 1000);
+      setBettingClosed(!isSystemOpenRef.current || remaining <= 10);
+    }, 100);
 
     // Adaptive server sync: 2s near/during draw, 10s otherwise
     const scheduleNextSync = () => {
       if (cancelled) return;
       const remaining = Math.max(
         0,
-        Math.ceil((roundEndTimeRef.current - (Date.now() - serverClockOffsetRef.current)) / 1000)
+        Math.ceil((roundEndTimeRef.current - getAuthoritativeServerNowMs()) / 1000)
       );
-      const delayMs = isDrawingRef.current || remaining <= 8 ? 2000 : 10000;
+      const delayMs = isDrawingRef.current || remaining <= 10 ? 2000 : 10000;
       timerId = window.setTimeout(async () => {
         if (cancelled) return;
         await refreshPlayerState('live');
@@ -448,8 +503,8 @@ export default function App() {
       sound.playBeep();
       return;
     }
-    if (bettingClosed || isDrawing || countdownSeconds <= 0) {
-      setBetError('បិទការភ្នាល់សម្រាប់ជុំនេះហើយ (Betting Closed)! សូមរង់ចាំជុំបន្ទាប់។');
+    if (bettingClosed || isDrawing || countdownSeconds <= 10) {
+      setBetError('បិទការភ្នាល់ — សូមរង់ចាំជុំបន្ទាប់ (Betting Closed — Wait for Next Round)');
       sound.playBeep();
       return;
     }
@@ -581,7 +636,11 @@ export default function App() {
           <PlayerLogin onLogin={handlePlayerLogin} />
         </div>
       ) : (
-        <div className="flex-1 flex flex-col animate-fadeIn">
+        <div
+          className={`flex-1 flex flex-col animate-fadeIn ${
+            currentTab === 'home' ? 'lg:h-screen lg:overflow-hidden' : ''
+          }`}
+        >
           <Header
             currentTab={currentTab}
             setCurrentTab={setCurrentTab}
@@ -595,10 +654,14 @@ export default function App() {
             onLogout={() => handlePlayerLogout()}
           />
 
-          <main className="flex-1 w-full max-w-[1720px] mx-auto p-2 sm:p-4">
+          <main
+            className={`flex-1 w-full max-w-[1720px] mx-auto p-2 sm:p-3 flex flex-col ${
+              currentTab === 'home' ? 'lg:min-h-0' : ''
+            }`}
+          >
             {currentTab === 'home' && (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-start">
-                <aside className="lg:col-span-3 xl:col-span-2 order-2 lg:order-1">
+              <div className="grid grid-cols-1 lg:grid-cols-[22fr_49fr_29fr] gap-2.5 sm:gap-3 lg:flex-1 lg:min-h-0 lg:items-stretch">
+                <aside className="min-w-0 order-2 lg:order-1 lg:h-full lg:min-h-0">
                   <UserSidebar
                     currentDate={currentDate}
                     userId={playerSession.id}
@@ -614,7 +677,7 @@ export default function App() {
                   />
                 </aside>
 
-                <section className="lg:col-span-6 xl:col-span-7 flex flex-col gap-3.5 order-1 lg:order-2">
+                <section className="min-w-0 flex flex-col gap-2.5 order-1 lg:order-2 lg:h-full lg:min-h-0">
                   <LiveDrawBillboard
                     currentRoundId={currentRoundId}
                     previousRound={latestFinishedRound}
@@ -641,7 +704,7 @@ export default function App() {
                   />
                 </section>
 
-                <aside className="lg:col-span-3 xl:col-span-3 order-3">
+                <aside className="min-w-0 order-3 lg:h-full lg:min-h-0">
                   <BettingPanel
                     stakePerUnit={stakePerUnit}
                     setStakePerUnit={(amt) => {
