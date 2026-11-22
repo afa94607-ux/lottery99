@@ -679,9 +679,9 @@ export default function App() {
           />
 
           <main
-            className={`flex-1 w-full max-w-[1720px] mx-auto p-2 sm:p-3 flex flex-col ${
-              currentTab === 'home' ? 'lg:min-h-0' : ''
-            }`}
+            className={`flex-1 w-full mx-auto p-2 sm:p-3 flex flex-col ${
+              currentTab === 'winloss' ? 'max-w-[98%] sm:px-4' : 'max-w-[1720px]'
+            } ${currentTab === 'home' ? 'lg:min-h-0' : ''}`}
           >
             {currentTab === 'home' && (
               <div className="grid grid-cols-1 lg:grid-cols-[22fr_49fr_29fr] gap-2.5 sm:gap-3 lg:flex-1 lg:min-h-0 lg:items-stretch">

@@ -103,14 +103,14 @@ export const WinLossView: React.FC<WinLossViewProps> = ({
     val > 0 ? 'text-emerald-600' : val < 0 ? 'text-rose-600' : 'text-slate-600';
 
   return (
-    <div className="max-w-7xl mx-auto py-6 px-4 space-y-6">
+    <div className="w-full max-w-none mx-auto py-5 px-1 sm:px-3 space-y-6">
       {/* Title & Selected Date Banner */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-4 border-b border-slate-200">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900">
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900">
             របាយការណ៍ឈ្នះចាញ់ប្រចាំថ្ងៃ (Daily Win/Loss Statement)
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+          <p className="text-sm text-slate-500 mt-1">
             កាលបរិច្ឆេទរបាយការណ៍:{' '}
             <span className="font-mono font-bold text-slate-900 bg-amber-100 px-2 py-0.5 rounded">
               {selectedDate}
@@ -118,9 +118,9 @@ export const WinLossView: React.FC<WinLossViewProps> = ({
             (Asia/Phnom_Penh UTC+7)
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Date Selector (Year / Month / Day) + Prev / Next Day */}
-          <div className="flex flex-wrap items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 shadow-xs text-xs">
+          <div className="flex flex-wrap items-center gap-1.5 bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-xs text-xs sm:text-sm">
             <button
               type="button"
               onClick={() => {
@@ -200,7 +200,7 @@ export const WinLossView: React.FC<WinLossViewProps> = ({
           </div>
 
           {currentUser && (
-            <div className="text-xs font-mono bg-slate-100 border border-slate-200 px-3 py-2 rounded-xl text-slate-700">
+            <div className="text-xs sm:text-sm font-mono bg-slate-100 border border-slate-200 px-3.5 py-2 rounded-xl text-slate-700">
               គណនីអ្នកលេង: <span className="font-bold text-slate-900">{currentUser.username}</span>{' '}
               <span className="text-slate-400">({currentUser.id})</span>
             </div>
@@ -209,71 +209,71 @@ export const WinLossView: React.FC<WinLossViewProps> = ({
       </div>
 
       {/* KPI Summary Cards (Strictly Settled Bets Only) */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {/* Settled Stake */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col gap-1">
-          <span className="text-xs font-semibold text-slate-500">
+        <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col gap-2">
+          <span className="text-xs sm:text-sm font-semibold text-slate-500">
             ប្រាក់ភ្នាល់បានទូទាត់ (Settled Stake)
           </span>
-          <div className="flex items-center gap-1.5 font-mono text-lg sm:text-xl font-bold text-slate-900">
-            <DollarSign className="w-5 h-5 text-blue-600 shrink-0" />
+          <div className="flex items-center gap-2 font-mono text-2xl sm:text-3xl font-black text-slate-900">
+            <DollarSign className="w-6 h-6 text-blue-600 shrink-0" />
             <span>{formatKHR(settledStake)}</span>
           </div>
-          <span className="text-[11px] text-slate-400 font-mono">
+          <span className="text-xs text-slate-400 font-mono">
             ទូទាត់រួច: {settledTickets.length} | រង់ចាំ: {pendingTickets.length} ({formatKHR(pendingStake)})
           </span>
         </div>
 
         {/* Actual Payout */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col gap-1">
-          <span className="text-xs font-semibold text-slate-500">
+        <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col gap-2">
+          <span className="text-xs sm:text-sm font-semibold text-slate-500">
             ប្រាក់រង្វាន់ជាក់ស្ដែង (Actual Payout)
           </span>
-          <div className="flex items-center gap-1.5 font-mono text-lg sm:text-xl font-bold text-emerald-600">
-            <TrendingUp className="w-5 h-5 text-emerald-600 shrink-0" />
+          <div className="flex items-center gap-2 font-mono text-2xl sm:text-3xl font-black text-emerald-600">
+            <TrendingUp className="w-6 h-6 text-emerald-600 shrink-0" />
             <span>{formatKHR(settledPayout)}</span>
           </div>
-          <span className="text-[11px] text-slate-400">
+          <span className="text-xs text-slate-400">
             សរុបរង្វាន់ដែលបានសងជាក់ស្ដែង
           </span>
         </div>
 
         {/* Player Net Win/Loss */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col gap-1">
-          <span className="text-xs font-semibold text-slate-500">
+        <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col gap-2">
+          <span className="text-xs sm:text-sm font-semibold text-slate-500">
             ឈ្នះ/ចាញ់ អ្នកលេង (Player Net W/L)
           </span>
           <div
-            className={`flex items-center gap-1.5 font-mono text-lg sm:text-xl font-black ${renderSignedClass(
+            className={`flex items-center gap-2 font-mono text-2xl sm:text-3xl font-black ${renderSignedClass(
               playerNetWinLoss
             )}`}
           >
             {playerNetWinLoss >= 0 ? (
-              <TrendingUp className="w-5 h-5 shrink-0" />
+              <TrendingUp className="w-6 h-6 shrink-0" />
             ) : (
-              <TrendingDown className="w-5 h-5 shrink-0" />
+              <TrendingDown className="w-6 h-6 shrink-0" />
             )}
             <span>{formatSignedKHR(playerNetWinLoss)}</span>
           </div>
-          <span className="text-[11px] text-slate-400">
+          <span className="text-xs text-slate-400">
             Payout − Accepted Stake
           </span>
         </div>
 
         {/* Game Owner Net Win/Loss (for this player's settled bets only) */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs flex flex-col gap-1">
-          <span className="text-xs font-semibold text-slate-500">
+        <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col gap-2">
+          <span className="text-xs sm:text-sm font-semibold text-slate-500">
             ឈ្នះ/ចាញ់ ម្ចាស់ហ្គេម (Owner Net W/L)
           </span>
           <div
-            className={`flex items-center gap-1.5 font-mono text-lg sm:text-xl font-black ${renderSignedClass(
+            className={`flex items-center gap-2 font-mono text-2xl sm:text-3xl font-black ${renderSignedClass(
               ownerNetWinLoss
             )}`}
           >
-            <ShieldCheck className="w-5 h-5 shrink-0" />
+            <ShieldCheck className="w-6 h-6 shrink-0" />
             <span>{formatSignedKHR(ownerNetWinLoss)}</span>
           </div>
-          <span className="text-[11px] text-slate-400">
+          <span className="text-xs text-slate-400">
             Accepted Stake − Payout
           </span>
         </div>
@@ -289,7 +289,7 @@ export const WinLossView: React.FC<WinLossViewProps> = ({
                 sound.playClick();
                 setFilter(tab);
               }}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+              className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all ${
                 filter === tab
                   ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
@@ -302,7 +302,7 @@ export const WinLossView: React.FC<WinLossViewProps> = ({
             </button>
           ))}
         </div>
-        <div className="text-[11px] text-slate-500">
+        <div className="text-xs text-slate-500">
           * សំបុត្រកំពុងរង់ចាំ (Pending) និងសំបុត្រលុបចោល (Void) មិនត្រូវបានរាប់បញ្ចូលក្នុងផលចំណេញ/ខាតជាក់ស្ដែងទេ
         </div>
       </div>
@@ -318,21 +318,21 @@ export const WinLossView: React.FC<WinLossViewProps> = ({
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left text-xs sm:text-sm border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-bold uppercase tracking-wider">
-                  <th className="py-3 px-3">កាលបរិច្ឆេទ & ម៉ោង (Date / Time)</th>
-                  <th className="py-3 px-3">វេន (Round ID)</th>
-                  <th className="py-3 px-3">អ្នកលេង (Player)</th>
-                  <th className="py-3 px-3">ប៉ុស្តិ៍ / លេខ</th>
-                  <th className="py-3 px-3 text-right">ទឹកប្រាក់ចាក់ (Stake)</th>
-                  <th className="py-3 px-3 text-right">រង្វាន់ជាក់ស្ដែង (Payout)</th>
-                  <th className="py-3 px-3 text-right">Player Win/Loss</th>
-                  <th className="py-3 px-3 text-right">Owner Win/Loss</th>
-                  <th className="py-3 px-3 text-center">វិក្កយបត្រ</th>
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs sm:text-sm font-bold uppercase tracking-wider">
+                  <th className="py-3.5 px-4">កាលបរិច្ឆេទ & ម៉ោង (Date / Time)</th>
+                  <th className="py-3.5 px-4">វេន (Round ID)</th>
+                  <th className="py-3.5 px-4">អ្នកលេង (Player)</th>
+                  <th className="py-3.5 px-4">ប៉ុស្តិ៍ / លេខ</th>
+                  <th className="py-3.5 px-4 text-right">ទឹកប្រាក់ចាក់ (Stake)</th>
+                  <th className="py-3.5 px-4 text-right">រង្វាន់ជាក់ស្ដែង (Payout)</th>
+                  <th className="py-3.5 px-4 text-right">Player Win/Loss</th>
+                  <th className="py-3.5 px-4 text-right">Owner Win/Loss</th>
+                  <th className="py-3.5 px-4 text-center">វិក្កយបត្រ</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-mono">
+              <tbody className="divide-y divide-slate-100 font-mono text-sm">
                 {filteredTickets.map((t) => {
                   const rowTs = getTicketTimestampMs(t);
                   const dateYmd = getTicketReportDateYmd(t);
@@ -344,45 +344,45 @@ export const WinLossView: React.FC<WinLossViewProps> = ({
 
                   return (
                     <tr key={t.ticketId} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3 px-3 font-semibold text-slate-800 whitespace-nowrap">
+                      <td className="py-3.5 px-4 font-semibold text-slate-800 whitespace-nowrap">
                         <div>{dateYmd}</div>
-                        <div className="text-[11px] text-slate-600">{timeHms}</div>
-                        <div className="text-[10px] text-slate-400">{t.ticketId}</div>
+                        <div className="text-xs text-slate-600">{timeHms}</div>
+                        <div className="text-xs text-slate-500">{t.ticketId}</div>
                       </td>
-                      <td className="py-3 px-3 text-blue-700 font-bold whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-blue-700 text-sm sm:text-base font-bold whitespace-nowrap">
                         {t.roundId}
                       </td>
-                      <td className="py-3 px-3 whitespace-nowrap">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <div className="font-bold text-slate-900">{playerLabel}</div>
                         {playerLabel !== t.userId && (
-                          <div className="text-[10px] text-slate-400">{t.userId}</div>
+                          <div className="text-xs text-slate-500">{t.userId}</div>
                         )}
                       </td>
-                      <td className="py-3 px-3 font-sans text-slate-800">
-                        <div className="text-[11px] font-semibold text-slate-600 mb-0.5">
+                      <td className="py-3.5 px-4 font-sans text-slate-800">
+                        <div className="text-xs sm:text-sm font-semibold text-slate-700 mb-1">
                           {t.channels.join(', ')}
                         </div>
-                        <div className="flex flex-wrap gap-1 max-w-[160px]">
+                        <div className="flex flex-wrap gap-1.5 max-w-[260px]">
                           {t.numbers.map((n) => (
                             <span
                               key={n}
-                              className="px-1.5 py-0.2 bg-slate-100 rounded text-[10px] font-mono font-bold"
+                              className="px-2 py-0.5 bg-slate-100 rounded text-xs font-mono font-bold"
                             >
                               {n}
                             </span>
                           ))}
                         </div>
                       </td>
-                      <td className="py-3 px-3 text-right font-bold text-slate-800 whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-right text-sm sm:text-base font-bold text-slate-800 whitespace-nowrap">
                         {formatKHR(t.totalCost)}
                       </td>
-                      <td className="py-3 px-3 text-right font-bold whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-right text-sm sm:text-base font-bold whitespace-nowrap">
                         {t.status === 'PENDING' ? (
-                          <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-sans font-bold bg-amber-100 text-amber-800">
+                          <span className="inline-block px-2.5 py-1 rounded-full text-xs font-sans font-bold bg-amber-100 text-amber-800">
                             Pending
                           </span>
                         ) : t.status === 'VOID' ? (
-                          <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-sans font-bold bg-slate-200 text-slate-600">
+                          <span className="inline-block px-2.5 py-1 rounded-full text-xs font-sans font-bold bg-slate-200 text-slate-600">
                             Void
                           </span>
                         ) : (
@@ -391,10 +391,10 @@ export const WinLossView: React.FC<WinLossViewProps> = ({
                           </span>
                         )}
                       </td>
-                      <td className="py-3 px-3 text-right font-black whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-right text-sm sm:text-base font-black whitespace-nowrap">
                         {isSettled ? (
                           <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md ${
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md ${
                               playerNet > 0
                                 ? 'bg-emerald-50 text-emerald-700'
                                 : playerNet < 0
@@ -405,19 +405,19 @@ export const WinLossView: React.FC<WinLossViewProps> = ({
                             {formatSignedKHR(playerNet)}
                           </span>
                         ) : t.status === 'PENDING' ? (
-                          <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-sans font-bold bg-amber-100 text-amber-800">
+                          <span className="inline-block px-2.5 py-1 rounded-full text-xs font-sans font-bold bg-amber-100 text-amber-800">
                             Pending
                           </span>
                         ) : (
-                          <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-sans font-bold bg-slate-200 text-slate-600">
+                          <span className="inline-block px-2.5 py-1 rounded-full text-xs font-sans font-bold bg-slate-200 text-slate-600">
                             Void
                           </span>
                         )}
                       </td>
-                      <td className="py-3 px-3 text-right font-black whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-right text-sm sm:text-base font-black whitespace-nowrap">
                         {isSettled ? (
                           <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md ${
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md ${
                               ownerNet > 0
                                 ? 'bg-emerald-50 text-emerald-700'
                                 : ownerNet < 0
@@ -428,22 +428,22 @@ export const WinLossView: React.FC<WinLossViewProps> = ({
                             {formatSignedKHR(ownerNet)}
                           </span>
                         ) : t.status === 'PENDING' ? (
-                          <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-sans font-bold bg-amber-100 text-amber-800">
+                          <span className="inline-block px-2.5 py-1 rounded-full text-xs font-sans font-bold bg-amber-100 text-amber-800">
                             Pending
                           </span>
                         ) : (
-                          <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-sans font-bold bg-slate-200 text-slate-600">
+                          <span className="inline-block px-2.5 py-1 rounded-full text-xs font-sans font-bold bg-slate-200 text-slate-600">
                             Void
                           </span>
                         )}
                       </td>
-                      <td className="py-3 px-3 text-center">
+                      <td className="py-3.5 px-4 text-center">
                         <button
                           onClick={() => onViewTicket(t)}
-                          className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
+                          className="p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
                           title="View Receipt"
                         >
-                          <Eye className="w-4 h-4 mx-auto" />
+                          <Eye className="w-5 h-5 mx-auto" />
                         </button>
                       </td>
                     </tr>
