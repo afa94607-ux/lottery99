@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 import { Header } from './components/Header';
 import { LiveDrawBillboard } from './components/LiveDrawBillboard';
@@ -185,7 +185,11 @@ export default function App() {
   const [winNotification, setWinNotification] = useState<string | null>(null);
   const [liveAnnouncement, setLiveAnnouncement] = useState<string | null>(null);
 
-  const currentDate = getTodayDateStr();
+  const [currentDate, setCurrentDate] = useState<string>(() => getTodayDateStr());
+  const currentDateRef = useRef<string>(currentDate);
+  useEffect(() => {
+    currentDateRef.current = currentDate;
+  }, [currentDate]);
 
   const handlePlayerLogin = (account: AppUser, token: string) => {
     setSessionNotice(null);
@@ -334,6 +338,10 @@ export default function App() {
     setPlayerSession(state.account);
     setCurrentRoundId(state.currentRoundId);
     setSystemConfig(state.systemConfig);
+    const serverYmd = state.serverDateYmd || formatCambodiaDateYmd(state.serverTimestamp);
+    if (serverYmd && serverYmd !== currentDateRef.current) {
+      setCurrentDate(serverYmd);
+    }
     if (mode === 'full') {
       setPastRounds(state.pastRounds);
       setPlayerTickets(state.tickets);
@@ -426,6 +434,10 @@ export default function App() {
       );
       setCountdownSeconds(remaining);
       setBettingClosed(!isSystemOpenRef.current || remaining <= 10);
+      const khToday = formatCambodiaDateYmd(getAuthoritativeServerNowMs());
+      if (khToday !== currentDateRef.current) {
+        setCurrentDate(khToday);
+      }
     }, 100);
 
     // Adaptive server sync: 2s near/during draw, 10s otherwise
@@ -603,6 +615,18 @@ export default function App() {
     setIsPrintModalOpen(true);
   };
 
+  const todayBettingHistory = useMemo(
+    () =>
+      playerTickets.filter((t) => {
+        const ticketYmd =
+          t.timestamp && Number.isFinite(t.timestamp)
+            ? formatCambodiaDateYmd(t.timestamp)
+            : t.dateYmd || (t.createdAt || '').slice(0, 10);
+        return ticketYmd === currentDate;
+      }),
+    [playerTickets, currentDate]
+  );
+
   const playerBalance = playerSession?.balance ?? 0;
   const inPlayBet = playerTickets
     .filter((t) => t.roundId === currentRoundId && t.status === 'PENDING')
@@ -667,7 +691,9 @@ export default function App() {
                     userId={playerSession.id}
                     balance={playerBalance}
                     inPlayBet={inPlayBet}
-                    recentTickets={playerTickets}
+                    recentTickets={todayBettingHistory}
+                    pastRounds={pastRounds}
+                    activeDrawRoundId={isDrawing ? currentRoundId : null}
                     onRefresh={() => {
                       sound.playClick();
                       refreshPlayerState();

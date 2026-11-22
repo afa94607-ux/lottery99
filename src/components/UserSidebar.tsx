@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { RotateCw, CheckSquare, Square, Ticket, Eye } from 'lucide-react';
-import { BetTicket } from '../types/lottery';
-import { formatKHR } from '../utils/formatters';
+import { BetTicket, ChannelLetter, RoundResult } from '../types/lottery';
+import { formatKHR, CHANNEL_COLORS } from '../utils/formatters';
 import { sound } from '../utils/audio';
 
 interface UserSidebarProps {
@@ -10,6 +10,8 @@ interface UserSidebarProps {
   balance: number;
   inPlayBet: number;
   recentTickets: BetTicket[];
+  pastRounds?: RoundResult[];
+  activeDrawRoundId?: string | null;
   onRefresh: () => void;
   onViewTicket: (ticket: BetTicket) => void;
   onOpenWalletInfo?: () => void;
@@ -21,11 +23,21 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({
   balance,
   inPlayBet,
   recentTickets,
+  pastRounds = [],
+  activeDrawRoundId = null,
   onRefresh,
   onViewTicket,
   onOpenWalletInfo,
 }) => {
   const [autoRefresh, setAutoRefresh] = React.useState(true);
+
+  const roundsById = useMemo(() => {
+    const map = new Map<string, RoundResult>();
+    for (const rnd of pastRounds) {
+      map.set(rnd.roundId, rnd);
+    }
+    return map;
+  }, [pastRounds]);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-3.5 sm:p-4 flex flex-col gap-3 lg:absolute lg:inset-0 min-h-0">
@@ -130,12 +142,16 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({
                 className="w-full h-auto object-contain"
               />
             </div>
-            <p className="text-xs text-slate-400 font-medium">មិនទាន់មានការភ្នាល់នៅឡើយ</p>
+            <p className="text-xs text-slate-400 font-medium">មិនទាន់មានការភ្នាល់ថ្ងៃនេះទេ (No bets today.)</p>
             <p className="text-[11px] text-slate-400">សូមជ្រើសរើសប៉ុស្តិ៍ និងលេខដើម្បីចាក់</p>
           </div>
         ) : (
           <div className="w-full flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain space-y-2.5 pr-1 max-h-[560px] lg:max-h-none">
-            {recentTickets.map((ticket) => (
+            {recentTickets.map((ticket) => {
+              const roundResult = roundsById.get(ticket.roundId);
+              const isRoundCurrentlyDrawing = activeDrawRoundId === ticket.roundId;
+
+              return (
               <div
                 key={ticket.ticketId}
                 className="p-3.5 rounded-xl border border-slate-200/80 bg-slate-50/70 hover:bg-slate-50 transition-colors flex flex-col gap-2 text-sm"
@@ -173,6 +189,33 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({
                   </span>
                 </div>
 
+                {/* Official A-E Result Circles for this ticket's round */}
+                <div
+                  className="flex items-center justify-between gap-1 pt-1.5 border-t border-slate-200/60"
+                  data-testid={`ticket-results-${ticket.roundId}`}
+                >
+                  {(['A', 'B', 'C', 'D', 'E'] as ChannelLetter[]).map((ch) => {
+                    const rawNum = roundResult?.numbers?.[ch];
+                    const hasResult = Boolean(rawNum) && !isRoundCurrentlyDrawing;
+                    const displayNum = hasResult ? String(rawNum).padStart(2, '0') : '?';
+                    const circleClass = hasResult
+                      ? CHANNEL_COLORS[ch].badgeBg
+                      : 'bg-orange-500 text-white';
+                    return (
+                      <div key={ch} className="flex flex-col items-center gap-0.5 flex-1">
+                        <span className="text-[10px] font-bold text-slate-500 leading-none">
+                          {ch}
+                        </span>
+                        <div
+                          className={`w-7 h-7 rounded-full flex items-center justify-center font-mono font-extrabold text-xs shadow-2xs ${circleClass}`}
+                        >
+                          {displayNum}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
                 <div className="flex items-center justify-between pt-1.5 border-t border-slate-200/60">
                   <span className="font-mono text-slate-500 text-xs">{ticket.ticketId}</span>
                   <div className="flex items-center gap-2">
@@ -189,7 +232,8 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({
                   </div>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
