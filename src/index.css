@@ -49,7 +49,12 @@
   background: rgba(100, 116, 139, 0.5);
 }
 
-/* Print styling */
+/* Print styling — native 58mm thermal paper */
+@page {
+  size: 58mm auto;
+  margin: 2mm;
+}
+
 @media print {
   body * {
     visibility: hidden;
@@ -61,9 +66,11 @@
     position: absolute;
     left: 0;
     top: 0;
-    width: 80mm;
-    margin: 0 auto;
-    padding: 10px;
+    width: 54mm;
+    margin: 0;
+    padding: 2mm;
+    font-size: 13px;
+    line-height: 1.35;
     background: white !important;
     color: black !important;
   }

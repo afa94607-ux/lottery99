@@ -486,7 +486,7 @@ export default function App() {
 
   const selectMultipleNumbers = (nums: string[]) => {
     setBetError(null);
-    setSelectedNumbers(nums);
+    setSelectedNumbers(Array.from(new Set(nums)));
   };
 
   const clearNumbers = () => {
@@ -661,7 +661,7 @@ export default function App() {
           >
             {currentTab === 'home' && (
               <div className="grid grid-cols-1 lg:grid-cols-[22fr_49fr_29fr] gap-2.5 sm:gap-3 lg:flex-1 lg:min-h-0 lg:items-stretch">
-                <aside className="min-w-0 order-2 lg:order-1 lg:h-full lg:min-h-0">
+                <aside className="min-w-0 order-2 lg:order-1 lg:relative">
                   <UserSidebar
                     currentDate={currentDate}
                     userId={playerSession.id}
@@ -704,7 +704,7 @@ export default function App() {
                   />
                 </section>
 
-                <aside className="min-w-0 order-3 lg:h-full lg:min-h-0">
+                <aside className="min-w-0 order-3 lg:relative">
                   <BettingPanel
                     stakePerUnit={stakePerUnit}
                     setStakePerUnit={(amt) => {
@@ -764,6 +764,7 @@ export default function App() {
         isOpen={isPrintModalOpen}
         onClose={() => setIsPrintModalOpen(false)}
         ticket={activeReceiptTicket}
+        payoutRate={systemConfig.payoutRate}
       />
 
       <DepositModal

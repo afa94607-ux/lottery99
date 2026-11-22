@@ -77,7 +77,7 @@ export const BettingPanel: React.FC<BettingPanelProps> = ({
   };
 
   return (
-    <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-200/80 p-3.5 sm:p-4 flex flex-col gap-3 h-full min-h-0">
+    <div className="w-full bg-white rounded-2xl shadow-sm border border-slate-200/80 p-3.5 sm:p-4 flex flex-col gap-3 lg:absolute lg:inset-0 min-h-0">
       {/* Top Input: ទឹកប្រាក់ [ 0៛ ] [លុប] */}
       <div className="flex items-center gap-2.5 shrink-0">
         <label className="text-sm sm:text-base font-bold text-slate-700 whitespace-nowrap shrink-0">
@@ -211,7 +211,7 @@ export const BettingPanel: React.FC<BettingPanelProps> = ({
       <div className="border-t border-slate-200/80 shrink-0" />
 
       {/* Recent Results Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between shrink-0">
         <h3 className="font-extrabold text-lg sm:text-xl text-slate-800">
           លទ្ធផលថ្មីៗ <span className="text-sm text-slate-500 font-normal">(Recent Draws)</span>
         </h3>
@@ -219,7 +219,7 @@ export const BettingPanel: React.FC<BettingPanelProps> = ({
       </div>
 
       {/* List of Past Rounds */}
-      <div className="w-full flex-1 min-h-[280px] lg:min-h-0 overflow-y-auto space-y-3 pr-1 max-h-[580px] lg:max-h-none">
+      <div className="w-full flex-1 min-h-[280px] lg:min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain space-y-3 pr-1 max-h-[580px] lg:max-h-none">
         {/* Live Drawing Round: Updates & reveals one by one from A to E */}
         {isDrawing && currentDrawingRound && (
           <div className="p-3.5 sm:p-4 rounded-xl border-2 border-amber-400 bg-amber-50/80 shadow-md">

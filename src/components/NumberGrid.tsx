@@ -30,6 +30,7 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
 }) => {
   const channels: ChannelLetter[] = ['A', 'B', 'C', 'D', 'E'];
   const allNumbers = Array.from({ length: 99 }, (_, i) => padNumber(i + 1));
+  const [rangeStart, setRangeStart] = React.useState<number | null>(null);
 
   // Quick preset handlers
   const handleSelectOdd = () => {
@@ -64,7 +65,27 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
 
   const handleSelectDecade = (start: number, end: number) => {
     sound.playSelect();
+    setRangeStart(null);
     const range = allNumbers.slice(start - 1, end);
+    selectMultipleNumbers(range);
+  };
+
+  const handleNumberClick = (num: string) => {
+    sound.playSelect();
+    if (selectionMode !== 'RANGE') {
+      toggleNumber(num);
+      return;
+    }
+    const clicked = parseInt(num, 10);
+    if (rangeStart === null) {
+      setRangeStart(clicked);
+      selectMultipleNumbers([num]);
+      return;
+    }
+    const lo = Math.min(rangeStart, clicked);
+    const hi = Math.max(rangeStart, clicked);
+    const range = allNumbers.slice(lo - 1, hi);
+    setRangeStart(null);
     selectMultipleNumbers(range);
   };
 
@@ -82,6 +103,7 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
               checked={selectionMode === 'NUMBER'}
               onChange={() => {
                 sound.playClick();
+                setRangeStart(null);
                 setSelectionMode('NUMBER');
               }}
               className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed"
@@ -97,6 +119,7 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
               checked={selectionMode === 'RANGE'}
               onChange={() => {
                 sound.playClick();
+                setRangeStart(null);
                 setSelectionMode('RANGE');
               }}
               className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-blue-600 focus:ring-blue-500 cursor-pointer disabled:cursor-not-allowed"
@@ -191,6 +214,7 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
               disabled={disabled}
               onClick={() => {
                 sound.playClick();
+                setRangeStart(null);
                 clearNumbers();
               }}
               className="text-xs sm:text-sm text-rose-600 hover:text-rose-700 disabled:opacity-50 disabled:cursor-not-allowed underline font-semibold"
@@ -207,15 +231,15 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
           <span className="text-xs sm:text-sm font-semibold text-blue-900 mr-1">ចន្លោះលេខទូទៅ:</span>
           {[
             { label: '01-10', s: 1, e: 10 },
-            { label: '11-20', s: 11, e: 20 },
-            { label: '21-30', s: 21, e: 30 },
-            { label: '31-40', s: 31, e: 40 },
-            { label: '41-50', s: 41, e: 50 },
-            { label: '51-60', s: 51, e: 60 },
-            { label: '61-70', s: 61, e: 70 },
-            { label: '71-80', s: 71, e: 80 },
-            { label: '81-90', s: 81, e: 90 },
-            { label: '91-99', s: 91, e: 99 },
+            { label: '10-19', s: 10, e: 19 },
+            { label: '20-29', s: 20, e: 29 },
+            { label: '30-39', s: 30, e: 39 },
+            { label: '40-49', s: 40, e: 49 },
+            { label: '50-59', s: 50, e: 59 },
+            { label: '60-69', s: 60, e: 69 },
+            { label: '70-79', s: 70, e: 79 },
+            { label: '80-89', s: 80, e: 89 },
+            { label: '90-99', s: 90, e: 99 },
           ].map((r) => (
             <button
               key={r.label}
@@ -238,10 +262,7 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
               <button
                 key={num}
                 disabled={disabled}
-                onClick={() => {
-                  sound.playSelect();
-                  toggleNumber(num);
-                }}
+                onClick={() => handleNumberClick(num)}
                 className={`w-8 h-8 sm:w-9 sm:h-9 xl:w-10 xl:h-10 rounded-full font-mono font-semibold text-sm sm:text-base transition-all flex items-center justify-center border disabled:opacity-50 disabled:cursor-not-allowed ${
                   isSelected
                     ? 'bg-blue-600 border-blue-700 text-white font-bold shadow-md scale-105 z-10 ring-2 ring-blue-300'

@@ -131,11 +131,11 @@ export const LiveDrawBillboard: React.FC<LiveDrawBillboardProps> = ({
       </div>
 
       {/* Main Golden Slot Billboard Frame */}
-      <div className="relative z-10 px-3 sm:px-5 pb-2.5 sm:pb-3.5 pt-2 flex flex-col items-center">
+      <div className="relative z-10 px-2 sm:px-3.5 pb-1.5 sm:pb-2 pt-1 flex flex-col items-center">
         {/* Golden Machine Border Box */}
-        <div className="w-full max-w-4xl p-2 sm:p-2.5 rounded-2xl bg-gradient-to-b from-[#f9d423] via-[#e65c00] to-[#f9d423] shadow-[0_10px_30px_rgba(0,0,0,0.6),inset_0_2px_4px_rgba(255,255,255,0.8)] border-2 border-yellow-200">
-          <div className="p-1.5 sm:p-2 rounded-xl bg-gradient-to-b from-[#240b36] to-[#000000] border border-amber-500/40 shadow-inner">
-            <div className="grid grid-cols-5 gap-1.5 sm:gap-2.5">
+        <div className="w-full max-w-4xl p-1.5 sm:p-2 rounded-2xl bg-gradient-to-b from-[#f9d423] via-[#e65c00] to-[#f9d423] shadow-[0_10px_30px_rgba(0,0,0,0.6),inset_0_2px_4px_rgba(255,255,255,0.8)] border-2 border-yellow-200">
+          <div className="p-1 sm:p-1.5 rounded-xl bg-gradient-to-b from-[#240b36] to-[#000000] border border-amber-500/40 shadow-inner">
+            <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
               {channels.map((ch) => {
                 const isRev = revealedChannels[ch];
                 const displayNum = isDrawing
@@ -153,7 +153,7 @@ export const LiveDrawBillboard: React.FC<LiveDrawBillboardProps> = ({
                     }`}
                   >
                     {/* Arched Red Post Header */}
-                    <div className="bg-gradient-to-b from-[#e52d27] via-[#d31027] to-[#b31217] py-0.5 sm:py-1 text-center text-white font-black text-sm sm:text-lg xl:text-xl tracking-wider shadow-md border-b-2 border-amber-400 flex items-center justify-center gap-1">
+                    <div className="bg-gradient-to-b from-[#e52d27] via-[#d31027] to-[#b31217] py-0.5 text-center text-white font-black text-base sm:text-xl xl:text-2xl tracking-wider shadow-md border-b-2 border-amber-400 flex items-center justify-center gap-1">
                       <span>{ch}</span>
                       {isDrawing && isRev && (
                         <span className="text-[9px] bg-amber-300 text-slate-900 px-1 py-0.2 rounded font-sans font-black shadow-xs">
@@ -163,20 +163,21 @@ export const LiveDrawBillboard: React.FC<LiveDrawBillboardProps> = ({
                     </div>
 
                     {/* Slot Digit Container */}
-                    <div className="bg-gradient-to-b from-white via-slate-50 to-slate-200 h-14 sm:h-20 xl:h-24 flex items-center justify-center relative overflow-hidden">
+                    <div className="bg-gradient-to-b from-white via-slate-50 to-slate-200 h-20 sm:h-24 xl:h-28 flex items-center justify-center relative overflow-hidden">
                       {/* Subtle horizontal glass line reflection */}
                       <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/70 to-transparent pointer-events-none" />
 
-                      {/* Number Text with authentic colors from screenshot */}
+                      {/* Number Text with authentic colors */}
                       <span
-                        className={`font-mono font-black text-3xl sm:text-4xl xl:text-5xl tracking-tight transition-transform duration-200 ${colStyle.text} ${
+                        className={`font-mono font-black leading-none tracking-tighter select-none transition-transform duration-200 ${colStyle.text} ${
                           isDrawing && !isRev
                             ? 'animate-slot-shake blur-[0.4px]'
                             : isDrawing && isRev
-                            ? 'scale-110 drop-shadow-md'
+                            ? 'scale-105 drop-shadow-md'
                             : 'scale-100'
                         }`}
                         style={{
+                          fontSize: 'clamp(2.5rem, 4.8vw, 5.5rem)',
                           textShadow: '0 2px 4px rgba(0, 0, 0, 0.25)',
                         }}
                       >
@@ -196,7 +197,7 @@ export const LiveDrawBillboard: React.FC<LiveDrawBillboardProps> = ({
         </div>
 
         {/* Live Status Kicker / Instant Draw Button */}
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-2.5">
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-2.5">
           {isDrawing ? (
             <div className="flex items-center gap-2 bg-amber-500/20 text-amber-300 border border-amber-400/40 px-3 py-1 rounded-full text-xs sm:text-sm font-semibold animate-pulse">
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />

@@ -28,7 +28,7 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({
   const [autoRefresh, setAutoRefresh] = React.useState(true);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-3.5 sm:p-4 flex flex-col gap-3 h-full min-h-0">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-3.5 sm:p-4 flex flex-col gap-3 lg:absolute lg:inset-0 min-h-0">
       {/* Date & Account ID */}
       <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100 shrink-0">
         <div className="min-w-0 flex flex-col gap-0.5">
@@ -119,7 +119,7 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({
       </div>
 
       {/* Content Area: Either Illustration when empty or Recent Bet Slips */}
-      <div className="flex-1 flex flex-col justify-start items-center min-h-[280px] lg:min-h-0 overflow-hidden">
+      <div className="w-full flex-1 flex flex-col justify-start items-center min-h-[280px] lg:min-h-0 overflow-hidden">
         {recentTickets.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center p-2 text-center">
             <div className="w-full max-w-[220px] rounded-xl overflow-hidden shadow-2xs border border-slate-100 mb-2">
@@ -134,7 +134,7 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({
             <p className="text-[11px] text-slate-400">សូមជ្រើសរើសប៉ុស្តិ៍ និងលេខដើម្បីចាក់</p>
           </div>
         ) : (
-          <div className="w-full flex-1 min-h-0 overflow-y-auto space-y-2.5 pr-1 max-h-[560px] lg:max-h-none">
+          <div className="w-full flex-1 min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain space-y-2.5 pr-1 max-h-[560px] lg:max-h-none">
             {recentTickets.map((ticket) => (
               <div
                 key={ticket.ticketId}
