@@ -172,6 +172,8 @@ export default function App() {
   const [selectedNumbers, setSelectedNumbers] = useState<string[]>(['42']);
   const [stakePerUnit, setStakePerUnit] = useState<number>(1000);
   const [isSubmittingBet, setIsSubmittingBet] = useState<boolean>(false);
+  const submittingBetRef = useRef<boolean>(false);
+  const selectionVersionRef = useRef<number>(0);
   const [betError, setBetError] = useState<string | null>(null);
   const [lastSubmittedBet, setLastSubmittedBet] = useState<{
     channels: ChannelLetter[];
@@ -491,6 +493,7 @@ export default function App() {
 
   const toggleNumber = (num: string) => {
     setBetError(null);
+    selectionVersionRef.current += 1;
     setSelectedNumbers((prev) =>
       prev.includes(num) ? prev.filter((n) => n !== num) : [...prev, num]
     );
@@ -498,16 +501,18 @@ export default function App() {
 
   const selectMultipleNumbers = (nums: string[]) => {
     setBetError(null);
+    selectionVersionRef.current += 1;
     setSelectedNumbers(Array.from(new Set(nums)));
   };
 
   const clearNumbers = () => {
     setBetError(null);
+    selectionVersionRef.current += 1;
     setSelectedNumbers([]);
   };
 
   const handleSubmitBet = async () => {
-    if (!playerToken || !playerSession || isSubmittingBet) return;
+    if (!playerToken || !playerSession || submittingBetRef.current || isSubmittingBet) return;
     setBetError(null);
 
     if (!systemConfig.isSystemOpen) {
@@ -530,47 +535,60 @@ export default function App() {
       return;
     }
 
+    submittingBetRef.current = true;
     setIsSubmittingBet(true);
+    const channelsSnap = [...selectedChannels];
+    const numbersSnap = [...selectedNumbers];
+    const stakeSnap = stakePerUnit;
+    const submitSelectionVersion = selectionVersionRef.current;
     const clientRequestId = `REQ-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
-    const res = await lotteryApi.placePlayerBet(playerToken, {
-      channels: [...selectedChannels],
-      numbers: [...selectedNumbers],
-      stakePerUnit,
-      clientRequestId,
-    });
-    setIsSubmittingBet(false);
+    try {
+      const res = await lotteryApi.placePlayerBet(playerToken, {
+        channels: channelsSnap,
+        numbers: numbersSnap,
+        stakePerUnit: stakeSnap,
+        clientRequestId,
+      });
 
-    if (!res.ok || !res.data) {
-      sound.playBeep();
-      if (res.status === 401 || res.status === 403) {
-        await handlePlayerLogout(
-          'គណនីរបស់អ្នកត្រូវបានផ្អាក ឬសម័យប្រើប្រាស់ផុតកំណត់! សូមចូលម្តងទៀត។'
-        );
+      if (!res.ok || !res.data) {
+        sound.playBeep();
+        if (res.status === 401 || res.status === 403) {
+          await handlePlayerLogout(
+            'គណនីរបស់អ្នកត្រូវបានផ្អាក ឬសម័យប្រើប្រាស់ផុតកំណត់! សូមចូលម្តងទៀត។'
+          );
+          return;
+        }
+        setBetError(res.error || 'មិនអាចដាក់ការភ្នាល់បានទេ!');
         return;
       }
-      setBetError(res.error || 'មិនអាចដាក់ការភ្នាល់បានទេ!');
-      return;
-    }
 
-    sound.playCash();
-    setLastSubmittedBet({
-      channels: [...selectedChannels],
-      numbers: [...selectedNumbers],
-      stake: stakePerUnit,
-    });
-    setPlayerSession((prev) => (prev ? { ...prev, balance: res.data!.newBalance } : prev));
-    setPlayerTickets((prev) => {
-      if (prev.some((t) => t.ticketId === res.data!.ticket.ticketId)) return prev;
-      return [res.data!.ticket, ...prev];
-    });
-    refreshPlayerState();
+      sound.playCash();
+      setLastSubmittedBet({
+        channels: channelsSnap,
+        numbers: numbersSnap,
+        stake: stakeSnap,
+      });
+      setPlayerSession((prev) => (prev ? { ...prev, balance: res.data!.newBalance } : prev));
+      setPlayerTickets((prev) => {
+        if (prev.some((t) => t.ticketId === res.data!.ticket.ticketId)) return prev;
+        return [res.data!.ticket, ...prev];
+      });
+      if (selectionVersionRef.current === submitSelectionVersion) {
+        setSelectedNumbers([]);
+      }
+      refreshPlayerState();
+    } finally {
+      submittingBetRef.current = false;
+      setIsSubmittingBet(false);
+    }
   };
 
   const handleRepeatLastBet = () => {
     if (!lastSubmittedBet) return;
     sound.playSelect();
     setBetError(null);
+    selectionVersionRef.current += 1;
     setSelectedChannels(lastSubmittedBet.channels);
     setSelectedNumbers(lastSubmittedBet.numbers);
     setStakePerUnit(lastSubmittedBet.stake);
@@ -579,6 +597,7 @@ export default function App() {
   const handleClearAll = () => {
     sound.playClick();
     setBetError(null);
+    selectionVersionRef.current += 1;
     setSelectedNumbers([]);
     setStakePerUnit(0);
   };

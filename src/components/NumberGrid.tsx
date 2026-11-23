@@ -32,6 +32,12 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
   const allNumbers = Array.from({ length: 99 }, (_, i) => padNumber(i + 1));
   const [rangeStart, setRangeStart] = React.useState<number | null>(null);
 
+  React.useEffect(() => {
+    if (selectedNumbers.length === 0) {
+      setRangeStart(null);
+    }
+  }, [selectedNumbers.length]);
+
   // Quick preset handlers
   const handleSelectOdd = () => {
     sound.playSelect();
