@@ -219,79 +219,92 @@ export const BettingPanel: React.FC<BettingPanelProps> = ({
       </div>
 
       {/* List of Past Rounds */}
-      <div className="w-full flex-1 min-h-[280px] lg:min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain space-y-3 pr-1 max-h-[580px] lg:max-h-none">
+      <div className="w-full flex-1 min-h-[280px] lg:min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain pr-1 max-h-[580px] lg:max-h-none">
         {/* Live Drawing Round: Updates & reveals one by one from A to E */}
         {isDrawing && currentDrawingRound && (
-          <div className="p-3.5 sm:p-4 rounded-xl border-2 border-amber-400 bg-amber-50/80 shadow-md">
-            {/* Header: roundId & status */}
-            <div className="flex items-center justify-between text-base sm:text-lg font-mono text-slate-800 pb-2 border-b border-amber-200">
-              <span className="font-bold text-blue-700">{currentDrawingRound.roundId}</span>
-              <span className="text-xs bg-amber-400 text-slate-900 font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1.5 shadow-2xs">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" />
-                កំពុងចេញលទ្ធផល A-E...
-              </span>
-            </div>
+          <>
+            <div className="p-3.5 sm:p-4 rounded-xl border-2 border-amber-400 bg-amber-50/80 shadow-md">
+              {/* Header: roundId & status */}
+              <div className="flex items-center justify-between text-base sm:text-lg font-mono text-slate-800 pb-2 border-b border-amber-200">
+                <span className="font-bold text-blue-700">{currentDrawingRound.roundId}</span>
+                <span className="text-xs bg-amber-400 text-slate-900 font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1.5 shadow-2xs">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-ping" />
+                  កំពុងចេញលទ្ធផល A-E...
+                </span>
+              </div>
 
-            {/* Channels & Drawn numbers one by one */}
-            <div className="flex items-center justify-between pt-2.5">
-              <span className="text-sm font-semibold text-slate-600 mr-2">ប៉ុស្តិ៍</span>
-              <div className="flex items-center gap-2 flex-1 justify-around">
-                {(['A', 'B', 'C', 'D', 'E'] as ChannelLetter[]).map((ch) => {
-                  const isRev = currentDrawingRound.revealed[ch];
-                  const num = isRev ? currentDrawingRound.numbers[ch] : '??';
-                  const col = CHANNEL_COLORS[ch];
-                  return (
-                    <div key={ch} className="flex flex-col items-center">
-                      <span className="text-sm font-bold text-slate-700 mb-1">{ch}</span>
-                      <div
-                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-mono font-extrabold text-base sm:text-lg shadow-2xs transition-all duration-300 ${
-                          isRev
-                            ? `${col.badgeBg} scale-110 ring-2 ring-amber-400 shadow-md animate-bounce`
-                            : 'bg-white text-slate-400 border border-dashed border-slate-300 animate-pulse'
-                        }`}
-                      >
-                        {num}
+              {/* Channels & Drawn numbers one by one */}
+              <div className="flex items-center justify-between pt-2.5">
+                <span className="text-sm font-semibold text-slate-600 mr-2">ប៉ុស្តិ៍</span>
+                <div className="flex items-center gap-2 flex-1 justify-around">
+                  {(['A', 'B', 'C', 'D', 'E'] as ChannelLetter[]).map((ch) => {
+                    const isRev = currentDrawingRound.revealed[ch];
+                    const num = isRev ? currentDrawingRound.numbers[ch] : '??';
+                    const col = CHANNEL_COLORS[ch];
+                    return (
+                      <div key={ch} className="flex flex-col items-center">
+                        <span className="text-sm font-bold text-slate-700 mb-1">{ch}</span>
+                        <div
+                          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-mono font-extrabold text-base sm:text-lg shadow-2xs transition-all duration-300 ${
+                            isRev
+                              ? `${col.badgeBg} scale-110 ring-2 ring-amber-400 shadow-md animate-bounce`
+                              : 'bg-white text-slate-400 border border-dashed border-slate-300 animate-pulse'
+                          }`}
+                        >
+                          {num}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
+            {pastRounds.length > 0 && (
+              <div
+                data-testid="result-history-divider"
+                className="h-1.5 w-full bg-red-600 rounded-full my-2.5 shrink-0"
+              />
+            )}
+          </>
         )}
 
-        {pastRounds.map((rnd) => (
-          <div
-            key={rnd.roundId}
-            className="p-3.5 sm:p-4 rounded-xl border border-slate-100 hover:border-slate-300 bg-slate-50/70 hover:bg-slate-50 transition-colors"
-          >
-            {/* Header: roundId & time */}
-            <div className="flex items-center justify-between text-base sm:text-lg font-mono text-slate-700 pb-2 border-b border-slate-200/60">
-              <span className="font-bold text-slate-900">{rnd.roundId}</span>
-              <span className="text-sm font-semibold text-slate-600">{rnd.drawTime}</span>
-            </div>
+        {pastRounds.map((rnd, idx) => (
+          <React.Fragment key={rnd.roundId}>
+            <div className="p-3.5 sm:p-4 rounded-xl border border-slate-100 hover:border-slate-300 bg-slate-50/70 hover:bg-slate-50 transition-colors">
+              {/* Header: roundId & time */}
+              <div className="flex items-center justify-between text-base sm:text-lg font-mono text-slate-700 pb-2 border-b border-slate-200/60">
+                <span className="font-bold text-slate-900">{rnd.roundId}</span>
+                <span className="text-sm font-semibold text-slate-600">{rnd.drawTime}</span>
+              </div>
 
-            {/* Channels & Drawn numbers */}
-            <div className="flex items-center justify-between pt-2.5">
-              <span className="text-sm font-semibold text-slate-500 mr-2">ប៉ុស្តិ៍</span>
-              <div className="flex items-center gap-2 flex-1 justify-around">
-                {(['A', 'B', 'C', 'D', 'E'] as ChannelLetter[]).map((ch) => {
-                  const num = rnd.numbers[ch] || '--';
-                  const col = CHANNEL_COLORS[ch];
-                  return (
-                    <div key={ch} className="flex flex-col items-center">
-                      <span className="text-sm font-bold text-slate-700 mb-1">{ch}</span>
-                      <div
-                        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-mono font-extrabold text-base sm:text-lg ${col.badgeBg} shadow-xs`}
-                      >
-                        {num}
+              {/* Channels & Drawn numbers */}
+              <div className="flex items-center justify-between pt-2.5">
+                <span className="text-sm font-semibold text-slate-500 mr-2">ប៉ុស្តិ៍</span>
+                <div className="flex items-center gap-2 flex-1 justify-around">
+                  {(['A', 'B', 'C', 'D', 'E'] as ChannelLetter[]).map((ch) => {
+                    const num = rnd.numbers[ch] || '--';
+                    const col = CHANNEL_COLORS[ch];
+                    return (
+                      <div key={ch} className="flex flex-col items-center">
+                        <span className="text-sm font-bold text-slate-700 mb-1">{ch}</span>
+                        <div
+                          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-mono font-extrabold text-base sm:text-lg ${col.badgeBg} shadow-xs`}
+                        >
+                          {num}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
+            {idx < pastRounds.length - 1 && (
+              <div
+                data-testid="result-history-divider"
+                className="h-1.5 w-full bg-red-600 rounded-full my-2.5 shrink-0"
+              />
+            )}
+          </React.Fragment>
         ))}
       </div>
     </div>
