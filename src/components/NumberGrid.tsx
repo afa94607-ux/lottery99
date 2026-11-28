@@ -261,7 +261,13 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
 
       {/* 01 to 99 Interactive Grid (Circular, evenly spaced, centered) */}
       <div className="w-full lg:flex-1 lg:min-h-0 overflow-y-auto flex items-start justify-center">
-        <div className="grid grid-cols-10 md:grid-cols-15 gap-2 justify-items-center mx-auto">
+        <div
+          className={
+            selectionMode === 'NUMBER'
+              ? 'grid grid-cols-10 md:grid-cols-15 gap-x-1.5 gap-y-1 justify-items-center mx-auto'
+              : 'grid grid-cols-10 md:grid-cols-15 gap-2 justify-items-center mx-auto'
+          }
+        >
           {allNumbers.map((num) => {
             const isSelected = selectedNumbers.includes(num);
             return (
@@ -269,7 +275,11 @@ export const NumberGrid: React.FC<NumberGridProps> = ({
                 key={num}
                 disabled={disabled}
                 onClick={() => handleNumberClick(num)}
-                className={`w-8 h-8 sm:w-9 sm:h-9 xl:w-10 xl:h-10 rounded-full font-mono font-semibold text-sm sm:text-base transition-all flex items-center justify-center border disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`${
+                  selectionMode === 'NUMBER'
+                    ? 'w-8 h-8 sm:w-[38px] sm:h-[38px] xl:w-[42px] xl:h-[42px] text-sm sm:text-base font-semibold'
+                    : 'w-8 h-8 sm:w-9 sm:h-9 xl:w-10 xl:h-10 text-sm sm:text-base font-semibold'
+                } rounded-full font-mono transition-all flex items-center justify-center border disabled:opacity-50 disabled:cursor-not-allowed ${
                   isSelected
                     ? 'bg-blue-600 border-blue-700 text-white font-bold shadow-md scale-105 z-10 ring-2 ring-blue-300'
                     : 'bg-white border-slate-200 text-slate-800 hover:border-blue-400 hover:bg-blue-50/50'
